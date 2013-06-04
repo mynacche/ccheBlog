@@ -4,39 +4,98 @@
 
 package cn.cche.vo;
 
+import java.sql.Timestamp;
+
+import cn.cche.util.Utils;
+
 /**
  * @author chexingyou
- * @date   2013-5-14
+ * @date 2013-5-14
  */
-public class Blog {
+public class Blog extends ID{
 
-	private String id;
+	private String blogId;
 	private String title;
-	private String content;
-	
-	public String getId() {
-	
-		return id;
-	}
-	public void setId(String id) {
-	
-		this.id = id;
-	}
+	private byte[] content;
+	private String authorId;
+	private User author;
+	private Timestamp createtime;
+	private Timestamp updatetime;
+
 	public String getTitle() {
-	
+
 		return title;
 	}
+
 	public void setTitle(String title) {
-	
+
 		this.title = title;
 	}
+
 	
-	public String getContent() {
-		
+	public byte[] getContent() {
+	
 		return content;
 	}
-	public void setContent(String content) {
+
+	public void setContent(byte[] content) {
 	
 		this.content = content;
 	}
+
+	public String getBlogId() {
+
+		return blogId;
+	}
+
+	public void setBlogId(String blogId) {
+
+		this.blogId = blogId;
+	}
+
+	public String getAuthorId() {
+
+		return authorId;
+	}
+
+	public void setAuthorId(String authorId) {
+
+		this.authorId = authorId;
+	}
+
+	public User getAuthor() {
+
+		return author;
+	}
+
+	public void setAuthor(User author) {
+
+		this.author = author;
+	}
+
+	public Timestamp getCreatetime() {
+
+		return createtime;
+	}
+
+	public void setCreatetime(Timestamp createtime) {
+
+		this.createtime = createtime;
+	}
+	
+	public Timestamp getUpdatetime() {
+	
+		return updatetime;
+	}
+
+	public void setUpdatetime(Timestamp updatetime) {
+	
+		this.updatetime = updatetime;
+	}
+
+	public String toString(){
+		
+		return Utils.toString(this);
+	}
+	
 }

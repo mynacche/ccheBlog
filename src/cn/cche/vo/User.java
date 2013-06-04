@@ -4,26 +4,18 @@
 
 package cn.cche.vo;
 
+import cn.cche.util.Utils;
+
 /**
  * @author chexingyou
  * @date 2013-5-14
  */
-public class User {
+public class User extends ID{
 
-	private String id;
 	private String userid;
 	private String username;
 	private String password;
 
-	public String getId() {
-
-		return id;
-	}
-
-	public void setId(String id) {
-
-		this.id = id;
-	}
 
 	public String getUserid() {
 	
@@ -55,8 +47,8 @@ public class User {
 		this.password = password;
 	}
 
-	public String toString() {
-
-		return this.id + "/" + this.username + "/" + this.password;
+	public String toString(){
+		
+		return Utils.toString(this);
 	}
 }

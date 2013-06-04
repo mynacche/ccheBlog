@@ -4,12 +4,12 @@
 
 package cn.cche.service;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import cn.cche.factory.ServiceFactory;
-import cn.cche.vo.User;
+import cn.cche.vo.Blog;
+import cn.cche.web.beans.PageReq;
 import cn.cche.web.beans.ReqBean;
 import cn.cche.web.beans.RespBean;
 
@@ -25,12 +25,14 @@ public class MainPageServiceImpl {
 		
 		Map<String,List<?>> dataMap = respBean.getDataMap();
 		
-		List<User> userList = ServiceFactory.getUserServiceImpl().top(reqBean,5).getDataList();
+		reqBean.setPageReq(new PageReq(10));
 		
-		dataMap.put("userList", userList);
+		List<Blog> blogList = ServiceFactory.getBlogServiceImpl().list(reqBean).getDataList();
+		
+		dataMap.put("blogList", blogList);
 		
 		respBean.setMapping("/index.jsp");
-
+		
 		return respBean;
 	}
 

@@ -1,7 +1,5 @@
 package cn.cche.dbutils;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -34,22 +32,21 @@ public class Jdbc {
 			return dataSource;
 		}
 		BasicDataSource dbcpDataSource = new BasicDataSource();
+		
 		Properties properties = new Properties();
 
 		try {
-			properties.load(new FileInputStream(Jdbc.class.getResource("/").getPath()
-					+ "jdbc.properties"));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			properties.load(Jdbc.class.getResourceAsStream("/jdbc.properties"));
 		} catch (IOException e) {
 			e.printStackTrace();
+			return null;
 		}
 
 		dbcpDataSource.setDriverClassName(properties.getProperty("jdbc.driverClassName"));
 		dbcpDataSource.setUrl(properties.getProperty("jdbc.url"));
 		dbcpDataSource.setUsername(properties.getProperty("jdbc.username"));
 		dbcpDataSource.setPassword(properties.getProperty("jdbc.password"));
-		dbcpDataSource.setDefaultAutoCommit(false);
+		dbcpDataSource.setDefaultAutoCommit(true);
 		dbcpDataSource.setMaxActive(100);
 		dbcpDataSource.setMaxIdle(30);
 		dbcpDataSource.setMaxWait(500);

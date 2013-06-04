@@ -12,7 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import cn.cche.factory.ServiceFactory;
-import cn.cche.util.Constant;
+import cn.cche.util.Const;
+import cn.cche.web.beans.ReqBean;
 import cn.cche.web.beans.RespBean;
 
 /**
@@ -27,18 +28,8 @@ public class MainServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
 			IOException {
 
-		/*PrintWriter out = resp.getWriter();
-		String file = MainServlet.class.getResource("/cn/cche/servlet/welcome.txt").getPath();
-		BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(file),"utf-8"));
-		String a = "";
-		while((a=r.readLine())!= null){
-			out.println("<h1>" + a +"</h1><br/>");
-			//out.println("<a href='" + req.getContextPath() + "/user/list'>用户列表</a>");
-		}
-		*/
-	
-		RespBean<?> bean = ServiceFactory.getMainPageServiceImpl().get(null);
-		req.setAttribute(Constant.RESPMAP, bean.getDataMap());
+		RespBean<?> bean = ServiceFactory.getMainPageServiceImpl().get(new ReqBean());
+		req.setAttribute(Const.RESPMAP, bean.getDataMap());
 		req.getRequestDispatcher(bean.getMapping()).forward(req, resp);
 		
 	}

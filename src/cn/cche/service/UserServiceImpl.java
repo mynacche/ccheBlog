@@ -6,19 +6,14 @@ package cn.cche.service;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-
-import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.handlers.ArrayHandler;
-import org.apache.commons.dbutils.handlers.BeanHandler;
-import org.apache.commons.dbutils.handlers.BeanListHandler;
 
 import cn.cche.dbutils.Jdbc;
 import cn.cche.dbutils.TransMgr;
-import cn.cche.exception.DAOException;
-import cn.cche.util.CommonUtil;
-import cn.cche.util.Constant;
+import cn.cche.util.Utils;
+import cn.cche.util.Const;
+import cn.cche.vo.ID;
 import cn.cche.vo.User;
 import cn.cche.web.beans.ReqBean;
 import cn.cche.web.beans.RespBean;
@@ -27,42 +22,21 @@ import cn.cche.web.beans.RespBean;
  * @author chexingyou
  * @date 2013-5-14
  */
-public class UserServiceImpl {
+public class UserServiceImpl extends BaseDAO {
 
 	public RespBean<User> list(ReqBean reqBean) {
 
 		RespBean<User> bean = new RespBean<User>();
-		List<User> list = null;
-		QueryRunner runner = Jdbc.getQueryRunner();
-		try {
-			list = runner.query("select * from t_user", new BeanListHandler<User>(User.class));
-			bean.setSuc();
-			bean.setMapping("/userList.jsp");
-		} catch (SQLException e) {
-			bean.setErr();
-			throw new DAOException("获取用户失败");
-		}
+
+		String sql = "select * from t_user";
+		sql = reqBean.getPageReq().buildSql(sql);
+
+		List<ID> ids = query_cache(ID.class, null, null, sql);
+
+		List<User> list = loadList(User.class, ids, null);
 
 		bean.setDataList(list);
-
-		return bean;
-	}
-
-	public RespBean<User> top(ReqBean reqBean, int top) {
-
-		RespBean<User> bean = new RespBean<User>();
-		List<User> list = null;
-		QueryRunner runner = Jdbc.getQueryRunner();
-		try {
-			list = runner.query("select * from t_user limit 0," + top, new BeanListHandler<User>(
-					User.class));
-			bean.setSuc();
-		} catch (SQLException e) {
-			bean.setErr();
-			throw new DAOException("获取用户失败");
-		}
-
-		bean.setDataList(list);
+		bean.setMapping("/user/userlist.jsp");
 
 		return bean;
 	}
@@ -70,74 +44,73 @@ public class UserServiceImpl {
 	public RespBean<User> show(ReqBean reqBean) {
 
 		RespBean<User> bean = new RespBean<User>();
-		List<User> list = null;
-		QueryRunner runner = Jdbc.getQueryRunner();
-		try {
-			list = runner.query("select * from t_user where userid= ?", new BeanListHandler<User>(
-					User.class), reqBean.getParams());
-			bean.setSuc();
-			bean.setMapping("/userDetail.jsp");
-		} catch (SQLException e) {
-			bean.setErr();
-			throw new DAOException("获取用户失败");
+		String id = reqBean.getId();
+
+		if (id == null) {
+			bean.setMapping(Const.ERR_PAGE);
+			return bean;
 		}
 
+		User user = read_cache(User.class, "user", id, "select * from t_user where id= ?", id);
+		List<User> list = new ArrayList<User>();
+		list.add(user);
 		bean.setDataList(list);
-
+		bean.setMapping("/user/userdetail.jsp");
 		return bean;
 	}
 
 	public RespBean<User> reg(ReqBean reqBean) {
 
-		RespBean<User> bean = new RespBean<User>();
+		RespBean<User> respBean = new RespBean<User>();
+
+		User user = (User) reqBean.getVoInstance();
+		if (user == null) {
+			respBean.setMapping("/user/reg.html");
+			return respBean;
+		}
+
+		addUser(reqBean, respBean);
+		respBean.setMappingType(Const.MappingType.AJAX);
+		respBean.setMapping(reqBean.errPage());
+		return respBean;
+	}
+
+	protected void addUser(ReqBean reqBean, RespBean<User> respBean) {
 
 		User user = (User) reqBean.getVoInstance();
 
-		String result = addUser(user);
-		/*if (result.equals(Constant.RegResult.SUC)) {
-			bean.setSuc();
-		} else {
-			bean.setErr();
-		}*/
-		bean.setRespMsg(result);
-		bean.setMappingType(Constant.MappingType.AJAX);
-		bean.setMapping(Constant.ERR_PAGE);
-		return bean;
-	}
-
-	protected String addUser(User user) {
-
-		String result = null;
-
-		QueryRunner runner = Jdbc.getQueryRunner();
 		Connection conn = null;
 		TransMgr tm = null;
 		try {
 
-			if (validateExists(user)) {
-				return Constant.RegResult.USERNAMEERR;
+			if (isExists(user)) {
+				respBean.setFlag(Const.ERR);
+				respBean.setRespMsg(Const.RegResult.USERNAMEERR);
+				return;
 			}
 
 			conn = Jdbc.getConnection();
 			tm = Jdbc.getTransMgr(conn);
 			tm.beginTransaction();
 
-			int i = runner.update(conn, "insert into t_user(username,password) values (?,?)",
+			int i = update(conn, "insert into t_user(username,password) values (?,?)",
 					user.getUsername(), user.getPassword());
 			if (i > 0) {
-				Object[] id = runner.query(conn, "select id from t_user where username =?",
-						new ArrayHandler(), user.getUsername());
-				String prefix = (new Random().nextInt(999) + "000").substring(0, 3);
-				i = runner.update(conn, "update t_user set userid = ? where username=?", prefix
-						+ id[0], user.getUsername());
+				Object[] id = query(conn, "select @@identity");
+
+				i = update(conn, "update t_user set userid = ? where id=?",
+						Utils.getFullId(id[0]), id[0]);
 				if (i > 0) {
 					tm.commitAndClose();
-					result = Constant.RegResult.SUC;
+					respBean.setFlag(Const.SUC);
+					respBean.setRespMsg(Const.RegResult.SUC);
+					return;
 				}
 			}
 		} catch (SQLException e) {
 			tm.rollbackAndClose();
-			result = Constant.RegResult.ERR;
+			respBean.setFlag(Const.ERR);
+			respBean.setRespMsg(Const.RegResult.ERR);
 			e.printStackTrace();
 		} finally {
 			if (conn != null) {
@@ -145,60 +118,59 @@ public class UserServiceImpl {
 			}
 		}
 
-		return result;
 	}
 
-	public boolean validateExists(User user) {
+	protected boolean isExists(User user) {
 
 		boolean flag = false;
 
-		QueryRunner runner = Jdbc.getQueryRunner();
+		Object obj = read(User.class, "select * from t_user where username =?", user.getUsername());
 
-		try {
-			Object ret = runner.query("select * from t_user where username =?",
-					new BeanHandler<User>(User.class), user.getUsername());
-			System.out.println("ret =============" + ret + ",username =============" + user.getUsername() );
-			if (ret != null) {
-				flag = true;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
+		if (obj != null) {
+			flag = true;
 		}
 		return flag;
 	}
 
 	public RespBean<User> login(ReqBean reqBean) {
 
-		RespBean<User> bean = new RespBean<User>();
-
-		String redirect = null;
-		if (!CommonUtil.isEmpty(reqBean.getRequest().getParameter(Constant.URLREDIRECT))) {
-			redirect = reqBean.getRequest().getParameter(Constant.URLREDIRECT);
-		}
-		System.out.println("redirect: " + redirect);
-		if (redirect != null) {
-			bean.setMappingType(Constant.MappingType.REDIRECT);
-			bean.setMapping(redirect);
-		} else {
-			bean.setMappingType(Constant.MappingType.REDIRECT);
-			bean.setMapping(Constant.ERR_PAGE);
-		}
+		RespBean<User> respBean = new RespBean<User>();
 
 		User user = (User) reqBean.getVoInstance();
 
-		QueryRunner runner = Jdbc.getQueryRunner();
-		try {
-			Object ret = runner.query("select * from t_user where username =? and password = ?",
-					new BeanHandler<User>(User.class), user.getUsername(), user.getPassword());
-			
-			if (ret != null) {
-				user = (User) ret;
-				bean.setSuc();
-				reqBean.getRequest().getSession().setAttribute(Constant.SESSIONATTR, user);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
+		if (user == null) {
+			respBean.setMapping("/user/login.html");
+			return respBean;
 		}
-		return bean;
+
+		String redirect = null;
+		if (!Utils.isEmpty(reqBean.getRequest().getParameter(Const.URLREDIRECT))) {
+			redirect = reqBean.getRequest().getParameter(Const.URLREDIRECT);
+		}
+
+		respBean.setMapping(redirect == null ? reqBean.errPage() : redirect);
+		respBean.setMappingType(Const.MappingType.AJAX);
+
+		user = read(User.class, "select * from t_user where username =? and password = ?",
+				user.getUsername(), user.getPassword());
+		if (user != null) {
+			respBean.setSuc();
+			respBean.setRespMsg(Const.LoginResult.SUC);
+			reqBean.getRequest().getSession().setAttribute(Const.SESSIONATTR, user);
+		} else {
+			respBean.setErr();
+			respBean.setRespMsg(Const.LoginResult.ERR);
+		}
+		return respBean;
+	}
+
+	public RespBean<User> logout(ReqBean reqBean) {
+
+		RespBean<User> respBean = new RespBean<User>();
+		reqBean.getRequest().getSession().setAttribute(Const.SESSIONATTR, null);
+		respBean.setMappingType(Const.MappingType.REDIRECT);
+		respBean.setMapping(Const.ERR_PAGE);
+
+		return respBean;
 	}
 }

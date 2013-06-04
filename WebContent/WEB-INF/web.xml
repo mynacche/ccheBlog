@@ -24,7 +24,7 @@
   	</init-param>
   	<init-param>
   		<param-name>needLoginUrls</param-name>
-  		<param-value>user/list,user/show</param-value>
+  		<param-value>user/list,user/show,blog/add,blog/show,blog/edit</param-value>
   	</init-param>
   </filter>
   <filter-mapping>
@@ -37,4 +37,14 @@
     <welcome-file>index</welcome-file>
     
   </welcome-file-list>
+  
+  <jsp-config>
+  	<taglib>
+  		<taglib-uri>myJstl</taglib-uri>
+  		<taglib-location>/WEB-INF/myJstl.tld</taglib-location>
+  	</taglib>
+  
+  </jsp-config>
+  
+  
 </web-app>

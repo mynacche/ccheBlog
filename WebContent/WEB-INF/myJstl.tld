@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
+    version="2.1">
+    
+  <description>myJstl</description>
+  <display-name>myJstl</display-name>
+  <tlib-version>1.1</tlib-version>
+  <short-name>myJstl</short-name>
+  <uri>myJstl</uri>
+
+  <function>
+  	<name>byteToString</name>
+  	<function-class>cn.cche.jstl.Jstl</function-class>
+  	<function-signature>java.lang.String byteToString(byte[])</function-signature>
+  </function>
+
+</taglib>

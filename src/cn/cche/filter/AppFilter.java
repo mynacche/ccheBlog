@@ -13,7 +13,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -25,8 +24,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import cn.cche.util.CommonUtil;
-import cn.cche.util.Constant;
+import cn.cche.util.Utils;
+import cn.cche.util.Const;
 import cn.cche.web.beans.ReqBean;
 import cn.cche.web.beans.RespBean;
 
@@ -44,7 +43,7 @@ public class AppFilter implements Filter {
 	private String encoding = "utf-8";
 
 	private List<String> ignoreUrls;
-	
+
 	private List<String> needLoginUrls;
 
 	public void destroy() {
@@ -55,12 +54,14 @@ public class AppFilter implements Filter {
 
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
-
+		/*System.out.println("title : " + request.getParameter("title"));
+		System.out.println("content : " + request.getParameter("content"));*/
 		try {
 			setEncoding(req, resp);
 
 			String url = request.getServletPath();
 			printPath(request);
+
 			for (String ignore : ignoreUrls) {
 				if (url.contains(ignore)) {
 					System.out.println("ignoreUrls :" + url);
@@ -68,19 +69,19 @@ public class AppFilter implements Filter {
 					return;
 				}
 			}
-			
-			ReqBean bean = new ReqBean(url);
-			bean.setRequest(request);
-			
-			for(String need : needLoginUrls){
-				if (url.contains(need)) { 
+
+			ReqBean bean = new ReqBean(request, url);
+
+			for (String need : needLoginUrls) {
+				if (url.contains(need)) {
 					if (!validateSession(bean)) {
-						response.sendRedirect(request.getContextPath() + "/login.html?redirect=" + url);
+						response.sendRedirect(request.getContextPath() + "/user/login?redirect="
+								+ bean.url());
 						return;
 					}
 				}
 			}
-			
+
 			String clsName = bean.getClazz();
 			String methodName = bean.getMethod();
 			Object obj = null;
@@ -130,7 +131,7 @@ public class AppFilter implements Filter {
 		boolean flag = true;
 
 		HttpSession session = bean.getRequest().getSession();
-		if (session.getAttribute(Constant.SESSIONATTR) == null) {
+		if (session.getAttribute(Const.SESSIONATTR) == null) {
 			flag = false;
 		}
 
@@ -140,7 +141,7 @@ public class AppFilter implements Filter {
 	public void instantiateVo(ReqBean bean) {
 
 		String vo = bean.getVo();
-		if (CommonUtil.isEmpty(vo)) {
+		if (Utils.isEmpty(vo)) {
 			return;
 		}
 		HttpServletRequest request = null;
@@ -149,26 +150,38 @@ public class AppFilter implements Filter {
 			Field[] fields = clazz.getDeclaredFields();
 			request = bean.getRequest();
 			Map<String, String[]> params = request.getParameterMap();
-			for (Entry<String, String[]> en : params.entrySet()) {
-				System.out.println(en.getKey() + "/" + en.getValue()[0]);
-			}
+			/*
+			 * for (Entry<String, String[]> en : params.entrySet()) {
+			 * System.out.println(en.getKey() + "/" + en.getValue()[0]); }
+			 */
 			Object obj = null;
 
 			obj = clazz.newInstance();
+			boolean isNull = true;
 			for (Field field : fields) {
 				field.setAccessible(true);
 				if (params.get(field.getName()) == null) {
-					if (Constant.IDENTITY.equals(field.getName())) {
+					if (Const.IDENTITY.equals(field.getName())) {
 						// field.set(obj, CommonUtil.UUID());
 					}
 				} else {
-					field.set(obj, params.get(field.getName())[0]);
+					isNull = false;
+					if (field.getType().equals(int.class)) {
+						field.set(obj, Integer.parseInt(params.get(field.getName())[0]));
+					} else if (field.getType().equals(byte[].class)) {
+						field.set(obj, params.get(field.getName())[0].getBytes("utf-8"));
+					} else {
+						field.set(obj, params.get(field.getName())[0]);
+					}
 				}
 			}
-			System.out.println(obj);
+			if (isNull) {
+				obj = null;
+			}
 			bean.setVoInstance(obj);
 
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+				| IllegalArgumentException | UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 	}
@@ -184,7 +197,7 @@ public class AppFilter implements Filter {
 	public void redirectErr(HttpServletRequest request, HttpServletResponse response) {
 
 		try {
-			request.getRequestDispatcher(Constant.ERR_PAGE).forward(request, response);
+			request.getRequestDispatcher(Const.ERR_PAGE).forward(request, response);
 		} catch (ServletException | IOException e) {
 			e.printStackTrace();
 		}
@@ -195,18 +208,19 @@ public class AppFilter implements Filter {
 		HttpServletRequest request = bean.getRequest();
 		HttpServletResponse response = bean.getResponse();
 
-		if (Constant.ERR.equals(bean.getFlag())) {
-			request.getRequestDispatcher(Constant.ERR_PAGE).forward(request, response);
+		if (Const.ERR.equals(bean.getFlag())
+				&& !Const.MappingType.AJAX.equals(bean.getMappingType())) {
+			request.getRequestDispatcher(Const.ERR_PAGE).forward(request, response);
 			return;
 		}
-		
-		if (Constant.MappingType.FORWARD.equals(bean.getMappingType())) {
-			request.setAttribute(Constant.RESPLIST, bean.getDataList());
-			request.setAttribute(Constant.RESPMAP, bean.getDataMap());
+
+		if (Const.MappingType.FORWARD.equals(bean.getMappingType())) {
+			request.setAttribute(Const.RESPLIST, bean.getDataList());
+			request.setAttribute(Const.RESPMAP, bean.getDataMap());
 			request.getRequestDispatcher(bean.getMapping()).forward(request, response);
-		} else if (Constant.MappingType.REDIRECT.equals(bean.getMappingType())) {
+		} else if (Const.MappingType.REDIRECT.equals(bean.getMappingType())) {
 			response.sendRedirect(request.getContextPath() + bean.getMapping());
-		} else if (Constant.MappingType.AJAX.equals(bean.getMappingType())) {
+		} else if (Const.MappingType.AJAX.equals(bean.getMappingType())) {
 			PrintWriter out = response.getWriter();
 			System.out.println("ajax: " + bean.toJsonStr());
 			out.println(bean.toJsonStr());

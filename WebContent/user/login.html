@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>login</title>
+</head>
+<body>
+	<form id="loginF">
+		<input type="hidden" id="redirect" name="redirect"> 用户名：<input
+			type="text" name="username" id="username"><br /> 密码：<input
+			type="password" name="password" id="password"> <input
+			id="loginB" type="button" value="登录"><span id="msg"></span>
+	</form>
+</body>
+<script type="text/javascript" src="../js/ajax.js"></script>
+<script type="text/javascript">
+	/* document.getElementById("loginB").onclick=function(){
+		
+		var form = document.getElementById("loginF");
+		var redirectEle = document.getElementById("redirect");
+		
+		redirectEle.value = getRedirect();
+		form.action="user/login";
+		form.submit();
+	}  */
+	$("loginB").onclick = function() {
+
+		var form = $("loginF");
+		var username = $("username").value;
+		var password = $("password").value;
+		var redirect = getRedirect();
+
+		var url = "../user/login?username=" + username + "&password=" + password
+				+ "&redirect=" + redirect;
+
+		/* callServer(
+				url,
+				"post",
+				null,
+				true,
+				function() {
+					if (xmlHttp.readyState == 4) {
+						var jsonStr = eval("(" + xmlHttp.responseText + ")");
+						if (jsonStr.flag == "-1") {
+							document.getElementById("msg").innerHTML = "<font color='red'>"
+									+ jsonStr.respMsg + "</font>";
+						} else {
+							redirect = jsonStr.mapping;
+							document.getElementById("msg").innerHTML = jsonStr.respMsg;
+							window.location = redirect;
+
+						}
+
+					}
+				});
+ */
+		ajax({
+			url:url,
+			method:"post",
+			data:null,
+			sync:true,
+			success:function(){
+				var jsonStr = eval("(" + xmlHttp.responseText + ")");
+				if (jsonStr.flag == "-1") {
+					$("msg").innerHTML = "<font color='red'>"
+							+ jsonStr.respMsg + "</font>";
+				} else {
+					redirect = jsonStr.mapping;
+					$("msg").innerHTML = jsonStr.respMsg;
+					window.location = redirect;
+
+				}
+			}
+		});
+	}
+
+	function getRedirect() {
+		var url = location.href;
+		var params = url.substring(url.indexOf("?") + 1, url.length).split("&");
+		var redirect = params[0].split("=");
+
+		if (redirect[0] == "redirect") {
+			return redirect[1] == null ? "" : redirect[1];
+		} else {
+			return "";
+		}
+	}
+</script>
+</html>

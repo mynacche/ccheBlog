@@ -4,6 +4,7 @@
 
 package cn.cche.factory;
 
+import cn.cche.service.BlogServiceImpl;
 import cn.cche.service.MainPageServiceImpl;
 import cn.cche.service.UserServiceImpl;
 
@@ -18,6 +19,11 @@ public class ServiceFactory {
 		return new UserServiceImpl();
 	}
 
+	public static BlogServiceImpl getBlogServiceImpl() {
+
+		return new BlogServiceImpl();
+	}
+	
 	public static MainPageServiceImpl getMainPageServiceImpl() {
 
 		return new MainPageServiceImpl();

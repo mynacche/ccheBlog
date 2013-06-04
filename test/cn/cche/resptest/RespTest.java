@@ -7,6 +7,7 @@ package cn.cche.resptest;
 import org.junit.Test;
 
 import cn.cche.factory.ServiceFactory;
+import cn.cche.vo.Blog;
 import cn.cche.vo.User;
 import cn.cche.web.beans.ReqBean;
 import cn.cche.web.beans.RespBean;
@@ -27,5 +28,14 @@ public class RespTest {
 			System.out.println(user.toString());
 		}
 	}
+	@Test
+	public void test1() {
 
+		ReqBean reqBean = new ReqBean();
+		RespBean<Blog> bean = ServiceFactory.getBlogServiceImpl().list(reqBean);
+
+		for (Blog blog : bean.getDataList()) {
+			System.out.println(blog.toString());
+		}
+	}
 }
