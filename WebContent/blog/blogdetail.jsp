@@ -20,11 +20,12 @@
 }
 
 #blogedit {
-	float:right;
+	float: right;
 	text-align: right;
 	line-height: 30px;
 	padding-right: 10px;
 }
+
 #blogedit a {
 	text-decoration: none;
 	color: blue;
@@ -35,16 +36,16 @@
 	<c:forEach items="${dataList }" var="blog" begin="0" end="0">
 
 		<div class="bloglist">
-			
+
 			<c:if test="${loginUser.id == blog.authorId}">
 				<div id="blogedit">
 					<a href="${path }/blog/edit/${blog.blogId }">编辑</a>
 				</div>
 			</c:if>
-			
+
 			<div class="blogtitle">${blog.title }</div>
-			
-			
+
+
 			<div class="blogauthor">
 				作者:${blog.author.username } 发布时间:
 				<fmt:formatDate value="${blog.createtime}" type="date"
@@ -53,10 +54,8 @@
 			<div class="blogcontent">
 				<%-- <c:set property="content" value="<c:out value='${blog.content}' escapeXml='false' />"></c:set>
 				<c:out value="${fn.replace(content,vEnter,'<br/>'}"></c:out> --%>
-				<pre>
-					<c:out value="${myJstl:byteToString(blog.content) }"
-						escapeXml="true"></c:out>
-				</pre>
+				<c:out value="${myJstl:byteToString(blog.content) }"
+					escapeXml="false"></c:out>
 
 			</div>
 		</div>

@@ -20,9 +20,9 @@
 			<div class="blogtitle">
 				<a href="<%=path %>/blog/show/${blog.blogId }">${blog.title }</a>
 			</div>
-			<div class="blogcontent">
+			<div class="blogcontent" >
 				<c:out value="${fn:substring(myJstl:byteToString(blog.content), 0, 150)}"
-							escapeXml="true" />
+							escapeXml="false" />
 				...<a href="<%=path %>/blog/show/${blog.blogId }">阅读全部</a>
 			</div>
 			<div class="blogauthor">

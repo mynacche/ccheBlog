@@ -45,7 +45,7 @@ li {
 		</ul>
 		<ul style="height: 420px">
 			<li>内容</li>
-			<li><textarea id="content" name="content"></textarea></li>
+			<li><textarea id="content" name="content" class="ckeditor"></textarea></li>
 		</ul>
 		<ul>
 			<li><button id="commitB">提交</button></li>
@@ -55,10 +55,35 @@ li {
 	</div>
 </body>
 <script type="text/javascript" src="../js/ajax.js"></script>
+<script type="text/javascript" src="../kindeditor/kindeditor.js"></script>
 <script type="text/javascript">
+	var editor;
+	KindEditor.ready(function(K) {
+		/* var options = {
+			cssPath : '../kindeditor/plugins/code/prettify.css',
+			uploadJson : 'kindeditor/jsp/upload_json.jsp',
+			fileManagerJson : 'kindeditor/jsp/file_manager_json.jsp',
+			allowFileManager : true,
+			resizeType : 0,
+			items : [ 'source', '|', 'undo', 'redo', '|', 'preview',
+					'wordpaste', '|', 'justifyleft', 'justifycenter',
+					'justifyright', 'justifyfull', 'insertorderedlist',
+					'insertunorderedlist', 'selectall', '|', 'fullscreen',
+					'formatblock', 'fontname', 'fontsize', '|', 'forecolor',
+					'hilitecolor', 'bold', 'italic', 'lineheight',
+					'removeformat', '|', 'table', 'hr' ],
+			afterCreate : function() {
+				this.sync();
+			},
+			afterBlur : function() {
+				this.sync();
+			}
+		};
+		editor = K.create('#content', options); */
+		editor = K.create('#content');
+	});
 	var titledom = document.getElementById("title");
 	var contentdom = document.getElementById("content");
-	var content2dom = document.getElementById("content2");
 
 	document.getElementById("resetB").onclick = function() {
 		var b = confirm("重置将丢失所填写的信息，是否继续？");
@@ -71,6 +96,8 @@ li {
 	};
 
 	document.getElementById("commitB").onclick = function() {
+
+		editor.sync();
 
 		var url = "../blog/add";
 		callServer(

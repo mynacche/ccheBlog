@@ -31,7 +31,7 @@ public class CacheMgr {
 		TimerTask task = new TimerTask() {
 			public void run() {
 
-				System.out.println("定时器工作中...");
+				//System.out.println("定时器工作中...");
 				/*
 				 * for (Entry<Serializable, Map<Serializable, CacheValue>> entry
 				 * : cache.entrySet()) { Map<Serializable, CacheValue>

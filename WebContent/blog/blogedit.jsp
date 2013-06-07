@@ -48,8 +48,10 @@ li {
 		</ul>
 		<ul style="height: 420px">
 			<li>内容</li>
-			<li><textarea id="content" name="content">
-					${myJstl:byteToString(blog.content) }
+
+			<li><textarea id="content" name="content" style="visibility:hidden;">
+					<c:out value='${myJstl:byteToString(blog.content) }'
+					escapeXml='true'></c:out>
 			</textarea></li>
 		</ul>
 		<ul>
@@ -60,13 +62,23 @@ li {
 	</div>
 </body>
 <script type="text/javascript" src="../../js/ajax.js"></script>
+<script type="text/javascript" src="../../kindeditor/kindeditor.js"></script>
 <script type="text/javascript">
 	
-	var titledom = document.getElementById("title");
-	var contentdom = document.getElementById("content");
-	var blogiddom = document.getElementById("blogId");
+	var editor;
+	KindEditor.ready(function(K) {
+		editor = K.create('#content');
+		editor.html($("content").value);
+	});
 	
-	document.getElementById("resetB").onclick = function() {
+	
+	var titledom = $("title");
+	var contentdom = $("content");
+	var blogiddom = $("blogId");
+	
+	 
+	
+	$("resetB").onclick = function() {
 		var b = confirm("重置将丢失所填写的信息，是否继续？");
 		if (b == true) {
 			titledom.value = "${blog.title }";
@@ -76,8 +88,10 @@ li {
 
 	};
 
-	document.getElementById("commitB").onclick = function() {
+	$("commitB").onclick = function() {
 
+		editor.sync();
+		
 		var url = "../../blog/edit";
 		callServer(
 				url,
@@ -89,11 +103,11 @@ li {
 					if (xmlHttp.readyState == 4) {
 						var jsonStr = eval("(" + xmlHttp.responseText + ")");
 						if (jsonStr.flag == "-1") {
-							document.getElementById("msg").innerHTML = "<font color='red'>"
+							$("msg").innerHTML = "<font color='red'>"
 									+ jsonStr.respMsg + "</font>";
 						} else {
 							redirect = jsonStr.mapping;
-							document.getElementById("msg").innerHTML = jsonStr.respMsg;
+							$("msg").innerHTML = jsonStr.respMsg;
 							window.location = redirect;
 
 						}
