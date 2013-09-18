@@ -59,6 +59,9 @@
 			method:"post",
 			data:null,
 			sync:true,
+			beforesend:function(){
+				xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+			},
 			success:function(){
 				var jsonStr = eval("(" + xmlHttp.responseText + ")");
 				if (jsonStr.flag == "-1") {

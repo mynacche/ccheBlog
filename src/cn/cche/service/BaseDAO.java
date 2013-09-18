@@ -121,6 +121,7 @@ public class BaseDAO {
 			add(java.util.Date.class);
 			add(java.sql.Date.class);
 			add(java.sql.Timestamp.class);
+			add(byte.class);
 		}
 	};
 

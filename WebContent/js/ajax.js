@@ -18,7 +18,7 @@ function ajax(param) {
 			
 	};
 	xmlHttp.open(param.method, param.url, param.sync);
-	xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded"); 
+	param.beforesend(); 
 	xmlHttp.send(param.data);
 }
 
